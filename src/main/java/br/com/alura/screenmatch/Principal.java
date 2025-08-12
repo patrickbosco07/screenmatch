@@ -19,6 +19,7 @@ public class Principal {
     private List<DadosSerie> dadosSeries =new ArrayList<>();
     private SerieRepository serieRepository;
     private List<Serie> series = new ArrayList<>();
+    private Optional<Serie> serieBuscada;
 
     public Principal(SerieRepository serieRepository) {
         this.serieRepository = serieRepository;
@@ -32,7 +33,14 @@ public class Principal {
                     1 - Buscar séries
                     2 - Buscar episódios
                     3 - Listar séries buscadas
-                                    
+                    4 - Buscar série pelo nome 
+                    5 - Buscar séries por ator
+                    6 - Buscar Top 5 séries              
+                    7 - Buscar séries por categoria
+                    8 - Buscar séries por número de temporadas e avaliação
+                    9 - Buscar episódios pelo trecho
+                    10 - Buscar top 5 episódios por série
+                    11 - Buscar episódios a partir de uma data
                     0 - Sair                                 
                     """;
             System.out.println(menu);
@@ -48,6 +56,30 @@ public class Principal {
                     break;
                 case 3:
                     listarSeriesBuscadas();
+                    break;
+                case 4:
+                    listarSeriePeloNome();
+                    break;
+                case 5:
+                    buscarSeriesPorAtor();
+                    break;
+                case 6:
+                    buscarTopSeries();
+                    break;
+                case 7:
+                    buscarSeriesPorCategoria();
+                    break;
+                case 8:
+                    buscarSeriesPorTemporadaAvaliacao();
+                    break;
+                case 9:
+                    buscarEpisodioPorTrecho();
+                    break;
+                case 10:
+                    topEpisodiosPorSerie();
+                    break;
+                case 11:
+                    buscarEpisodiosDepoisDeUmaData();
                     break;
                 case 0:
                     System.out.println("Saindo...");
@@ -111,7 +143,80 @@ public class Principal {
                 .sorted(Comparator.comparing(Serie::getGenero))
                 .forEach(System.out::println);
     }
+    private void listarSeriePeloNome(){
+        listarSeriesBuscadas();
+        System.out.println("Insira o nome da série que deseja pesquisar: ");
+        var nomeSerie = leitura.nextLine();
 
+        serieBuscada = serieRepository.findFirstByTituloContainingIgnoreCase(nomeSerie);
+        if (serieBuscada.isPresent()){
+            System.out.println("Dados da série: \n" + serieBuscada.get());
+        } else {
+            System.out.println("Série não encontrada");
+        }
+    }
+    private void buscarSeriesPorAtor(){
+        System.out.println("Insira o nome do ator: ");
+        var nomeAtor = leitura.nextLine();
+        System.out.println("Insira a avaliação: ");
+        var avaliacao = leitura.nextDouble();
+        List<Serie> seriesEncontradas = serieRepository.findByAtoresContainingIgnoreCaseAndAvaliacaoGreaterThanEqual(nomeAtor,avaliacao);
+        seriesEncontradas.forEach(System.out::println);
+    }
+    private void buscarTopSeries(){
+        List<Serie> seriesTop = serieRepository.findTop5ByOrderByAvaliacaoDesc();
+        seriesTop.forEach(serie ->
+                System.out.println(serie.getTitulo() + " avaliação: " + serie.getAvaliacao()));
+    }
+    private void buscarSeriesPorCategoria(){
+        System.out.println("Deseja buscar séries de que categoria/gênero? ");
+        var nomeGenero = leitura.nextLine();
+        Categoria categoria = Categoria.fromPortugues(nomeGenero);
+        List<Serie> seriesPorCategoria = serieRepository.findByGenero(categoria);
+        System.out.println("Séries da categoria: " + nomeGenero + ": ");
+        seriesPorCategoria.forEach(System.out::println);
+    }
+    private void buscarSeriesPorTemporadaAvaliacao(){
+        System.out.println("Digite o número máximo de temporadas que deseja: ");
+        var qtdTemporadas = Integer.valueOf(leitura.nextInt());
+        System.out.println("Digite a avaliação mínima para consulta: ");
+        var avaliacao = leitura.nextDouble();
+        List<Serie> listaSeries = serieRepository.seriesPorTemporadaEAvaliacao(qtdTemporadas,avaliacao);
+        System.out.println("Lista de séries com número e avaliação exigidos: ");
+        listaSeries.forEach(System.out::println);
+    }
+    private void buscarEpisodioPorTrecho(){
+        System.out.println("Qual o nome do episódio para busca? ");
+        var trechoEpisodio = leitura.nextLine();
+        List<Episodio> episodiosEncontrados = serieRepository.episodioPorTrecho(trechoEpisodio);
+        if (episodiosEncontrados.isEmpty()){
+            System.out.println("Nenhum episódio encontrado");
+        } else {
+            episodiosEncontrados.forEach(e -> System.out.printf("Série: %s Temporada %s - Episódio %s - %s\n",
+                    e.getSerie().getTitulo(), e.getTemporada(), e.getNumeroEpisodio(), e.getTitulo()));
+
+        }
+    }
+    private void topEpisodiosPorSerie(){
+        listarSeriePeloNome();
+        if (serieBuscada.isPresent()){
+            Serie serie = serieBuscada.get();
+            List<Episodio> topEpisodios = serieRepository.topEpisodiosPorSerie(serie);
+        }
+
+    }
+    private void buscarEpisodiosDepoisDeUmaData(){
+        listarSeriePeloNome();
+        if (serieBuscada.isPresent()){
+            Serie serie = serieBuscada.get();
+            System.out.println("Pesquisar a partir de qual ano?");
+            var anoLancamento = leitura.nextInt();
+            leitura.nextLine();
+
+            List<Episodio> episodiosAno = serieRepository.episodiosPorSerieEAno(serie,anoLancamento);
+            episodiosAno.forEach(System.out::println);
+        }
+    }
 //        System.out.println("Digite o nome da série para busca");
 //        String nomeSerie = leitura.nextLine();
 //        var json = consumoAPI.obterDados(ENDERECO + nomeSerie.replace(" ","+") + API_KEY);
