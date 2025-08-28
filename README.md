@@ -4,9 +4,10 @@ Um projeto full stack desenvolvido com Spring Boot (Java 17, JPA, PostgreSQL) no
 O sistema permite exibir e gerenciar informações sobre séries e filmes, consumindo e armazenando dados em banco de dados.
 
 📌 Tecnologias Utilizadas
+
 🔹 Backend
 
-Java 17
+- Java 17
 
 - Spring Boot 3.5.3
 
@@ -42,19 +43,8 @@ Java 17
 
 ✅ Estrutura pronta para expansão, como cadastro de usuários ou avaliações.
 
-📂 Estrutura do Projeto
-screenmatch/
- ├── backend/                # Código do backend (Spring Boot)
- │   ├── src/main/java/...
- │   ├── src/main/resources/
- │   └── pom.xml
- ├── frontend/               # Código do frontend (HTML, CSS e JS)
- │   ├── index.html
- │   ├── css/
- │   └── js/
- ├── README.md
-
 ⚙️ Como Rodar o Projeto
+
 🔸 Pré-requisitos
 
 - Java 17 instalado
